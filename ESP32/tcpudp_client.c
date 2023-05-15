@@ -137,8 +137,9 @@ void tcp_client(char id_protocol)
         }
         ESP_LOGI(TAG, "Successfully connected");
         int change = 0;
+        char* msg = mensaje(id_protocol, 0);
         while(change == 0) {
-            char* msg = mensaje(id_protocol, 0);
+            
             int err = TCP_send_frag(sock, 0, id_protocol);
             if (err < 0) {
                     ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
@@ -193,6 +194,7 @@ void udp_client(char id_protocol) {
         setsockopt (sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout);
 
         ESP_LOGI(TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
+        
         while(1) {
             
             int err = sendto(sock, msg, strlen(payload), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
@@ -220,12 +222,18 @@ void udp_client(char id_protocol) {
                     break;
                 }
             }
-
+            char tlayer = rx_buffer[4]
+            if (tlayer == '0') {
+                break;
+            }
         }
         if (sock != -1) {
             ESP_LOGE(TAG, "Shutting down socket and restarting...");
             shutdown(sock, 0);
             close(sock);
         }
-}
+        if (tlayer=='0') {
+                break;
+        }
+    }
 }

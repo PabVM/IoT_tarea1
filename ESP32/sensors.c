@@ -123,14 +123,14 @@ float* acc_sensor_acc_z(){
 }
 
 
-int THPC_sensor_temp(){
+unsigned char THPC_sensor_temp(){
     //int n = (rand() %25) + 5;
-    int n = (int)floatrand(5,30);
+    unsigned char n = (unsigned char)floatrand(5,30);
     return n;
 }
 
-float THPC_sensor_hum(){
-    float n = floatrand(30,80);
+unsigned char THPC_sensor_hum(){
+    unsigned char n = (unsigned char)floatrand(30,80);
     return n;
 }
 
