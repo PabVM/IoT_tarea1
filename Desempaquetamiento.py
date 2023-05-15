@@ -3,11 +3,87 @@ import json
 import sqlite3 as sql
 import traceback
 
+createDatos = '''CREATE TABLE Datos (
+    ID_device INTEGER PRIMARY KEY,
+    MAC TEXT NOT NULL,
+    Val INTEGER,
+    Batt_level FLOAT,
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Temp INTEGER,
+    Press FLOAT,
+    Hum INTEGER,
+    Co FLOAT,
+    RMS FLOAT,
+    Amp_x FLOAT,
+    Frec_x FLOAT,
+    Amp_y FLOAT,
+    Frec_y FLOAT,
+    Amp_z FLOAT,
+    Frec_z FLOAT,
+    Acc_x FLOAT ARRAY,
+    Acc_y FLOAT ARRAY,
+    Acc_z FLOAT ARRAY
+)'''
+
+createLogs = '''CREATE TABLE Logs (
+    ID_device INTEGER PRIMARY KEY,
+    Status INTEGER,
+    Protocol INTEGER,
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)'''
+
+createConfig = '''CREATE TABLE Config (
+    Protocol INTEGER PRIMARY KEY DEFAULT 0,
+    Status INTEGER DEFAULT 1
+)'''
+
+createLoss = '''CREATE TABLE Loss (
+    Latency FLOAT,
+    Packet_loss INT
+)'''
+
+
+def dataCreate():
+    con = sql.connect("DB.sqlite")
+    cur = con.cursor()
+    cur.execute(createDatos)
+    cur.execute(createLogs)
+    cur.execute(createConfig)
+    cur.execute(createLoss)
+    con.close()
+
 # funcion para guardar los headers del mensaje recibido
 def dataSave(header,data):
     with sql.connect("DB.sqlite") as con:
         cur = con.cursor()
-        cur.execute('''insert into Info (ID, MAC, Status, Protocol, Msg_len, data1) values (?,?,?,?,?,?)''', (header["ID"], header["MAC"], header["status"], header["protocol"], header["msg_len"],data))
+        saveDatos = '''INSERT INTO Datos (ID_device, MAC, Val, Batt_level, Timestamp, Temp, Press, Hum, Co, RMS, Amp_x, Frec_x, Amp_y, Frec_y, Amp_z, Frec_z, Acc_x, Acc_y, Acc_z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        cur.execute(saveDatos, (header["ID_device"], header["MAC"],json.dumps(data)))
+
+def getConfig():
+    with sql.connect("DB.sqlite") as con:
+        cur = con.cursor()
+        get_tlayer = '''SELECT Status, Protocol from Config'''
+        status, protocol = cur.execute(get_tlayer)
+        return status, protocol
+
+def logSave(id_device, timestamp):
+    with sql.connect("DB.sqlite") as con:
+        cur = con.cursor()
+        saveLogs = '''INSERT INTO Logs (ID_device, Status, Protocol, Timestamp) VALUES (?, ?, ?, ?)'''
+        status, protocol = getConfig()
+        cur.execute(saveLogs,(id_device, status, protocol, timestamp))
+
+def configSave(status,protocol):
+    with sql.connect("DB.sqlite") as con:
+        cur = con.cursor()
+        saveConfig = '''UPDATE Config SET (Status, Protocol) VALUES (?, ?)'''
+        cur.execute(saveConfig,status,protocol)
+
+def saveLoss(t_diff, p_loss):
+    with sql.connect("DB.sqlite") as con:
+        cur = con.cursor()
+        lossSave = '''INSERT INTO Loss (Latency, Packet_loss) VALUES (?, ?)'''
+        cur.execute(lossSave,(t_diff, p_loss))
 
 # genera un OK para responder y da la posibilidad de cambiar el status/protocol
 # el status deberia ser UDP/TCP y el protocolo al tipo de mensaje(?)
@@ -56,6 +132,6 @@ def parseData(packet):
     data = packet[12:]
     header = headerDict(header)
     dataD = dataDict(header["protocol"],data)
-    if dataD is None:
+    if dataD is not None:
         dataSave(header,dataD)
     return None if dataD is None else {**header, **dataD}
