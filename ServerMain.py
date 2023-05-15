@@ -66,8 +66,8 @@ def UDP_frag_recv(s):
     return (doc,addr)
     
 
-HOST = "localhost"
-PORT = 5000
+HOST = "192.168.28.1"
+PORT = 5010
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST,PORT))
@@ -78,8 +78,7 @@ print(f'Listening in {HOST}:{PORT}')
 Lo que hay que hacer es:
 
 - Recibir la consulta de la ESP32 por el tipo de conexión
-- Establecer la conexión que se indique desde la base de datos
-AQUI SE SUPONE QUE LA ESP32 ES LA QUE SABE QUÉ TIPO DE CONEXIÓN HAY QUE ESTABLECER  
+- Establecer la conexión que se indique desde la base de datos 
 - Recibir los datos desde esa conexión (habría que crear un socket nuevo)
 - Guardar los datos en la BBDD
 

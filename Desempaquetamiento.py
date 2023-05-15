@@ -56,7 +56,7 @@ def dataCreate():
 def dataSave(header,data):
     with sql.connect("DB.sqlite") as con:
         cur = con.cursor()
-        saveDatos = '''INSERT INTO Datos (ID_device, MAC, Val, Batt_level, Timestamp, Temp, Press, Hum, Co, RMS, Amp_x, Frec_x, Amp_y, Frec_y, Amp_z, Frec_z, Acc_x, Acc_y, Acc_z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        saveDatos = '''INSERT INTO Datos (ID_device, MAC, Val, Batt_level, Timestamp, Temp, Press, Hum, Co, RMS, Amp_x, Frec_x, Amp_y, Frec_y, Amp_z, Frec_z, Acc_x, Acc_y, Acc_z) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
         cur.execute(saveDatos, (header["ID_device"], header["MAC"],json.dumps(data)))
 
 def getConfig():
@@ -69,20 +69,20 @@ def getConfig():
 def logSave(id_device, timestamp):
     with sql.connect("DB.sqlite") as con:
         cur = con.cursor()
-        saveLogs = '''INSERT INTO Logs (ID_device, Status, Protocol, Timestamp) VALUES (?, ?, ?, ?)'''
+        saveLogs = '''INSERT INTO Logs (ID_device, Status, Protocol, Timestamp) VALUES (%s, %s, %s, %s)'''
         status, protocol = getConfig()
         cur.execute(saveLogs,(id_device, status, protocol, timestamp))
 
 def configSave(status,protocol):
     with sql.connect("DB.sqlite") as con:
         cur = con.cursor()
-        saveConfig = '''UPDATE Config SET (Status, Protocol) VALUES (?, ?)'''
+        saveConfig = '''UPDATE Config SET (Status, Protocol) VALUES (%s, %s)'''
         cur.execute(saveConfig,status,protocol)
 
 def saveLoss(t_diff, p_loss):
     with sql.connect("DB.sqlite") as con:
         cur = con.cursor()
-        lossSave = '''INSERT INTO Loss (Latency, Packet_loss) VALUES (?, ?)'''
+        lossSave = '''INSERT INTO Loss (Latency, Packet_loss) VALUES (%s, %s)'''
         cur.execute(lossSave,(t_diff, p_loss))
 
 # genera un OK para responder y da la posibilidad de cambiar el status/protocol
